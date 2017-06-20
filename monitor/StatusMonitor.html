@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>StatusMonitor</title>
+    <link rel="stylesheet" href="./css/main.css">
+    <script src="./js/jquery-1.12.0.min.js"></script>
+</head>
+<body onload="refresh()">
+<table border="0" id="tab">
+    <tr>
+        <th colspan="9">StatusMonitor</th>
+    </tr>
+
+    </tr>
+</table>
+
+<script type = "text/javascript">
+    //待访问项目的数组
+    var program = new Array("admin-billing-ui","admin-crm-ui","admin-oss-ui","admin-product-ui","admin-public-ui","partner-ui","knowledge-ui","customer-ui","operator-ui",
+        "portal-ui","resource-ui","worker-ui","account-service","account-center-service","area-service","card-service","card-center-service","channel-service",
+        "check-service","collection-service","collection-center-service","customer-service","customer-center-service","iom-service","iom-center-service","job-service","knowledge-service",
+        "message-center-service","note-service","note-center-service","order-service","order-center-service","partner-service","pms-center-service","pms-frontend-conax-service","pms-partition-service",
+        "problem-service","problem-center-service","product-service","resource-service","resource-center-service","system-service",
+        "agent-web","stariboss-callcenter_proxy","stariboss-haiwai_proxy","starDA-web","api");
+    //在Table中添加行、列,为每行每列添加ID，i行0列添加序列号为i+1，i行1列ID为key+i，i行2列ID为value+i（i=0,1,2...）
+    var oTab = document.getElementById('tab');
+    //确定行数，向上取整
+    var row = Math.ceil(program.length/3);
+    for(var i=0; i<row; i++){
+        var oTr = document.createElement('tr');
+        for(var j=0; j<9; j++){
+            var oTd = document.createElement('td');
+            if(j%3==0){
+                oTd.setAttribute("class","td0");
+                oTd.setAttribute("id","series" + ((i*3)+Math.floor(j/3)));
+            } else if(j%3==1){
+                oTd.setAttribute("class","td1");
+                oTd.setAttribute("id","key" + ((i*3)+Math.floor(j/3)));
+            } else{
+                oTd.setAttribute("class","td2");
+                oTd.setAttribute("id","value" + ((i*3)+Math.floor(j/3)));
+            }
+            oTr.appendChild(oTd);
+        }
+        oTab.appendChild(oTr);
+    }
+    // 根据ID给每一列添加内容，第0列添加序列号，第一列添加项目名，第二列添加带有ID的div，ID值为项目名
+    for(var i=0; i<program.length; i++){
+        document.getElementById("series" + i).innerHTML = i+1;
+        document.getElementById("key" + i).innerHTML = program[i];
+        document.getElementById("value" + i).innerHTML="<div id='" + program[i] + "'></div>";
+    }
+    for(var i = 0; i < program.length; i++){
+        $("#"+ program[i]).append(" Waiting ").css('backgroundColor','yellow');
+    }
+    function refresh(){
+        for(var i = 0; i < program.length; i++){
+            $.ajax({
+                type : "get",
+                url: "https://10.0.251.240/" + program[i] + "/status",
+                cache: false,
+                async: true,
+                success: function(html){
+                    $("#"+ program[i]).append(" Success ").css('backgroundColor','green');
+                },
+                error :function(){
+                    $("#"+ program[i]).append(" Fail ").css('backgroundColor','red');
+                },
+                statusCode: {
+                    404: function() {
+                        alert('page not found');
+                    }
+                }
+            });
+        }
+    }
+
+</script>
+</body>
+</html>
